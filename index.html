@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game with KMU Obstacles</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 2px solid #333;
+        }
+        #startMessage {
+            position: absolute;
+            font-size: 24px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <div id="startMessage">Press Space to Start</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startMessage = document.getElementById('startMessage');
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+        let snake = [{x: 10, y: 10}];
+        let food = {x: 15, y: 15};
+        let dx = 0;
+        let dy = 0;
+        let score = 0;
+        let gameStarted = false;
+
+        // Define KMU obstacles
+        const obstacles = [
+            // K
+            {x: 5, y: 5}, {x: 5, y: 6}, {x: 5, y: 7}, {x: 5, y: 8}, {x: 5, y: 9},
+            {x: 6, y: 7}, {x: 7, y: 6}, {x: 7, y: 8}, {x: 8, y: 5}, {x: 8, y: 9},
+            // M
+            {x: 12, y: 5}, {x: 12, y: 6}, {x: 12, y: 7}, {x: 12, y: 8}, {x: 12, y: 9},
+            {x: 13, y: 6}, {x: 14, y: 7}, {x: 15, y: 6},
+            {x: 16, y: 5}, {x: 16, y: 6}, {x: 16, y: 7}, {x: 16, y: 8}, {x: 16, y: 9},
+            // U
+            {x: 20, y: 5}, {x: 20, y: 6}, {x: 20, y: 7}, {x: 20, y: 8},
+            {x: 21, y: 9}, {x: 22, y: 9}, {x: 23, y: 9},
+            {x: 24, y: 5}, {x: 24, y: 6}, {x: 24, y: 7}, {x: 24, y: 8}
+        ];
+
+        function drawGame() {
+            clearCanvas();
+            moveSnake();
+            drawObstacles();
+            drawSnake();
+            drawFood();
+            drawScore();
+            
+            if (gameStarted) {
+                if (checkCollision()) {
+                    gameOver();
+                } else {
+                    setTimeout(drawGame, 100);
+                }
+            }
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function moveSnake() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+            
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function drawSnake() {
+            snake.forEach((segment, index) => {
+                const gradient = ctx.createLinearGradient(
+                    segment.x * gridSize, 
+                    segment.y * gridSize, 
+                    (segment.x + 1) * gridSize, 
+                    (segment.y + 1) * gridSize
+                );
+                gradient.addColorStop(0, '#4CAF50');
+                gradient.addColorStop(1, '#45a049');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.roundRect(
+                    segment.x * gridSize, 
+                    segment.y * gridSize, 
+                    gridSize - 2, 
+                    gridSize - 2, 
+                    5
+                );
+                ctx.fill();
+
+                if (index === 0) {
+                    const eyeSize = 3;
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.arc(
+                        segment.x * gridSize + gridSize / 4, 
+                        segment.y * gridSize + gridSize / 4, 
+                        eyeSize, 0, Math.PI * 2
+                    );
+                    ctx.arc(
+                        segment.x * gridSize + 3 * gridSize / 4, 
+                        segment.y * gridSize + gridSize / 4, 
+                        eyeSize, 0, Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(
+                        segment.x * gridSize + gridSize / 4, 
+                        segment.y * gridSize + gridSize / 4, 
+                        eyeSize / 2, 0, Math.PI * 2
+                    );
+                    ctx.arc(
+                        segment.x * gridSize + 3 * gridSize / 4, 
+                        segment.y * gridSize + gridSize / 4, 
+                        eyeSize / 2, 0, Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+            });
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = '#333';
+            obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x * gridSize, obstacle.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+        }
+
+        function drawFood() {
+            ctx.fillStyle = '#FF5722';
+            ctx.beginPath();
+            ctx.arc(
+                food.x * gridSize + gridSize / 2,
+                food.y * gridSize + gridSize / 2,
+                gridSize / 2 - 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+        }
+
+        function drawScore() {
+            ctx.fillStyle = '#333';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+        }
+
+        function generateFood() {
+            do {
+                food.x = Math.floor(Math.random() * tileCount);
+                food.y = Math.floor(Math.random() * tileCount);
+            } while (
+                snake.some(segment => segment.x === food.x && segment.y === food.y) ||
+                obstacles.some(obstacle => obstacle.x === food.x && obstacle.y === food.y)
+            );
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+            return (
+                head.x < 0 || head.x >= tileCount ||
+                head.y < 0 || head.y >= tileCount ||
+                snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y) ||
+                obstacles.some(obstacle => obstacle.x === head.x && obstacle.y === head.y)
+            );
+        }
+
+        function gameOver() {
+            ctx.fillStyle = '#333';
+            ctx.font = '30px Arial';
+            ctx.fillText('Game Over!', canvas.width / 2 - 70, canvas.height / 2);
+            ctx.font = '20px Arial';
+            ctx.fillText('Press Space to Restart', canvas.width / 2 - 90, canvas.height / 2 + 30);
+            gameStarted = false;
+            startMessage.style.display = 'block';
+        }
+
+        function startGame() {
+            snake = [{x: 10, y: 10}];
+            generateFood();
+            score = 0;
+            gameStarted = true;
+            startMessage.style.display = 'none';
+            
+            const directions = [{x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}];
+            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+            dx = randomDirection.x;
+            dy = randomDirection.y;
+
+            drawGame();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (!gameStarted) {
+                    startGame();
+                }
+                e.preventDefault();
+            } else if (gameStarted) {
+                switch (e.key.toLowerCase()) {
+                    case 'w': if (dy === 0) { dx = 0; dy = -1; } break;
+                    case 'a': if (dx === 0) { dx = -1; dy = 0; } break;
+                    case 's': if (dy === 0) { dx = 0; dy = 1; } break;
+                    case 'd': if (dx === 0) { dx = 1; dy = 0; } break;
+                }
+            }
+        });
+
+        clearCanvas();
+        drawObstacles();
+    </script>
+</body>
+</html>
