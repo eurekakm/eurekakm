@@ -209,6 +209,7 @@
         let scores = [0, 0];
         let currentTheme = null;
         let gameIntervals = [null, null];
+        let gameOver = [false, false];
 
         function selectTheme(theme) {
             currentTheme = THEMES[theme];
@@ -279,13 +280,14 @@
         }
 
         function moveDown(playerIndex) {
+            if (gameOver[playerIndex]) return;
             currentPieces[playerIndex].y++;
             if (isCollision(playerIndex)) {
                 currentPieces[playerIndex].y--;
                 mergePiece(playerIndex);
                 clearLines(playerIndex);
                 if (isGameOver(playerIndex)) {
-                    endGame();
+                    handlePlayerGameOver(playerIndex);
                     return;
                 }
                 currentPieces[playerIndex] = createPiece();
@@ -294,6 +296,7 @@
         }
 
         function moveLeft(playerIndex) {
+            if (gameOver[playerIndex]) return;
             currentPieces[playerIndex].x--;
             if (isCollision(playerIndex)) {
                 currentPieces[playerIndex].x++;
@@ -302,6 +305,7 @@
         }
 
         function moveRight(playerIndex) {
+            if (gameOver[playerIndex]) return;
             currentPieces[playerIndex].x++;
             if (isCollision(playerIndex)) {
                 currentPieces[playerIndex].x--;
@@ -310,6 +314,7 @@
         }
 
         function rotate(playerIndex) {
+            if (gameOver[playerIndex]) return;
             const rotated = currentPieces[playerIndex].shape[0].map((_, i) =>
                 currentPieces[playerIndex].shape.map(row => row[i]).reverse()
             );
@@ -365,6 +370,20 @@
             return boards[playerIndex][0].some(cell => cell !== 0);
         }
 
+        function handlePlayerGameOver(playerIndex) {
+            gameOver[playerIndex] = true;
+            clearInterval(gameIntervals[playerIndex]);
+            
+            // Gray out the lost player's board
+            const gameBoard = document.getElementById(`game-board-${playerIndex + 1}`);
+            gameBoard.style.opacity = '0.5';
+
+            // Check if both players have lost
+            if (gameOver[0] && gameOver[1]) {
+                endGame();
+            }
+        }
+
         function endGame() {
             gameIntervals.forEach(interval => clearInterval(interval));
             document.getElementById('final-score-1').textContent = scores[0];
@@ -374,6 +393,7 @@
             document.getElementById('winner-text').textContent = winnerText;
             document.getElementById('game-over').style.display = 'block';
         }
+
         function returnToThemeSelection() {
             document.getElementById('game-over').style.display = 'none';
             document.getElementById('game-container').style.display = 'none';
@@ -391,8 +411,11 @@
                 Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0))
             ];
             scores = [0, 0];
+            gameOver = [false, false];
             document.getElementById('score-value-1').textContent = '0';
             document.getElementById('score-value-2').textContent = '0';
+            document.getElementById('game-board-1').style.opacity = '1';
+            document.getElementById('game-board-2').style.opacity = '1';
             currentPieces = [createPiece(), createPiece()];
             updateGame(0);
             updateGame(1);
