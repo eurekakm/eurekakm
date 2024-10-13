@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMURIS</title>
+    <title>Two-Player KMURIS</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -59,7 +59,20 @@
             z-index: 1;
         }
 
-        #game-board {
+        #game-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            width: 800px;
+        }
+
+        .player-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-board {
             width: 300px;
             height: 600px;
             background-color: rgba(0, 0, 0, 0.6);
@@ -79,7 +92,7 @@
             font-size: 20px;
         }
 
-        #score {
+        .score {
             color: #FFFFFF;
             font-size: 24px;
             margin-top: 20px;
@@ -135,7 +148,7 @@
     </style>
 </head>
 <body>
-    <div id="game-title">KMURIS</div>
+    <div id="game-title">Two-Player KMURIS</div>
     <div id="theme-selection">
         <h2>Choose Your Theme</h2>
         <button class="theme-button" onclick="selectTheme('animal')">Animal Tetris</button>
@@ -145,12 +158,22 @@
         <button class="theme-button" onclick="selectTheme('fantasy')">Fantasy Tetris</button>
     </div>
     <div id="game-container" style="display: none;">
-        <div id="game-board"></div>
-        <div id="score">Score: <span id="score-value">0</span></div>
+        <div class="player-container">
+            <h3>Player 1 (WASD)</h3>
+            <div id="game-board-1" class="game-board"></div>
+            <div class="score">Score: <span id="score-value-1">0</span></div>
+        </div>
+        <div class="player-container">
+            <h3>Player 2 (Arrows)</h3>
+            <div id="game-board-2" class="game-board"></div>
+            <div class="score">Score: <span id="score-value-2">0</span></div>
+        </div>
     </div>
     <div id="game-over" style="display: none;">
         <h2>Game Over!</h2>
-        <p>Your score: <span id="final-score"></span></p>
+        <p>Player 1 Score: <span id="final-score-1"></span></p>
+        <p>Player 2 Score: <span id="final-score-2"></span></p>
+        <p id="winner-text"></p>
         <button onclick="returnToThemeSelection()">Play Again</button>
     </div>
 
@@ -178,25 +201,30 @@
             [[0, 1, 1], [1, 1, 0]]
         ];
 
-        let board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
-        let currentPiece = null;
-        let score = 0;
+        let boards = [
+            Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0)),
+            Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0))
+        ];
+        let currentPieces = [null, null];
+        let scores = [0, 0];
         let currentTheme = null;
-        let gameInterval = null;
+        let gameIntervals = [null, null];
 
         function selectTheme(theme) {
             currentTheme = THEMES[theme];
             document.getElementById('theme-selection').style.display = 'none';
-            document.getElementById('game-container').style.display = 'block';
+            document.getElementById('game-container').style.display = 'flex';
             resetGame();
             startGame();
         }
 
         function startGame() {
-            if (gameInterval) {
-                clearInterval(gameInterval);
+            for (let i = 0; i < 2; i++) {
+                if (gameIntervals[i]) {
+                    clearInterval(gameIntervals[i]);
+                }
+                gameIntervals[i] = setInterval(() => moveDown(i), 1000);
             }
-            gameInterval = setInterval(moveDown, 1000);
         }
 
         function createPiece() {
@@ -213,10 +241,10 @@
             };
         }
 
-        function drawBoard() {
-            const gameBoard = document.getElementById('game-board');
+        function drawBoard(playerIndex) {
+            const gameBoard = document.getElementById(`game-board-${playerIndex + 1}`);
             gameBoard.innerHTML = '';
-            board.forEach((row, y) => {
+            boards[playerIndex].forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value) {
                         const block = document.createElement('div');
@@ -231,148 +259,172 @@
             });
         }
 
-        function drawPiece() {
-            if (!currentPiece) return;
-            currentPiece.shape.forEach((row, y) => {
+        function drawPiece(playerIndex) {
+            if (!currentPieces[playerIndex]) return;
+            const piece = currentPieces[playerIndex];
+            const gameBoard = document.getElementById(`game-board-${playerIndex + 1}`);
+            piece.shape.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value) {
                         const block = document.createElement('div');
                         block.className = 'tetromino';
-                        block.style.left = (currentPiece.x + x) * BLOCK_SIZE + 'px';
-                        block.style.top = (currentPiece.y + y) * BLOCK_SIZE + 'px';
-                        block.style.backgroundColor = currentPiece.color;
-                        block.textContent = currentPiece.character;
-                        document.getElementById('game-board').appendChild(block);
+                        block.style.left = (piece.x + x) * BLOCK_SIZE + 'px';
+                        block.style.top = (piece.y + y) * BLOCK_SIZE + 'px';
+                        block.style.backgroundColor = piece.color;
+                        block.textContent = piece.character;
+                        gameBoard.appendChild(block);
                     }
                 });
             });
         }
 
-        function moveDown() {
-            currentPiece.y++;
-            if (isCollision()) {
-                currentPiece.y--;
-                mergePiece();
-                clearLines();
-                if (isGameOver()) {
+        function moveDown(playerIndex) {
+            currentPieces[playerIndex].y++;
+            if (isCollision(playerIndex)) {
+                currentPieces[playerIndex].y--;
+                mergePiece(playerIndex);
+                clearLines(playerIndex);
+                if (isGameOver(playerIndex)) {
                     endGame();
                     return;
                 }
-                currentPiece = createPiece();
+                currentPieces[playerIndex] = createPiece();
             }
-            updateGame();
+            updateGame(playerIndex);
         }
 
-        function moveLeft() {
-            currentPiece.x--;
-            if (isCollision()) {
-                currentPiece.x++;
+        function moveLeft(playerIndex) {
+            currentPieces[playerIndex].x--;
+            if (isCollision(playerIndex)) {
+                currentPieces[playerIndex].x++;
             }
-            updateGame();
+            updateGame(playerIndex);
         }
 
-        function moveRight() {
-            currentPiece.x++;
-            if (isCollision()) {
-                currentPiece.x--;
+        function moveRight(playerIndex) {
+            currentPieces[playerIndex].x++;
+            if (isCollision(playerIndex)) {
+                currentPieces[playerIndex].x--;
             }
-            updateGame();
+            updateGame(playerIndex);
         }
 
-        function rotate() {
-            const rotated = currentPiece.shape[0].map((_, i) =>
-                currentPiece.shape.map(row => row[i]).reverse()
+        function rotate(playerIndex) {
+            const rotated = currentPieces[playerIndex].shape[0].map((_, i) =>
+                currentPieces[playerIndex].shape.map(row => row[i]).reverse()
             );
-            const prevShape = currentPiece.shape;
-            currentPiece.shape = rotated;
-            if (isCollision()) {
-                currentPiece.shape = prevShape;
+            const prevShape = currentPieces[playerIndex].shape;
+            currentPieces[playerIndex].shape = rotated;
+            if (isCollision(playerIndex)) {
+                currentPieces[playerIndex].shape = prevShape;
             }
-            updateGame();
+            updateGame(playerIndex);
         }
 
-        function isCollision() {
-            return currentPiece.shape.some((row, dy) =>
+        function isCollision(playerIndex) {
+            return currentPieces[playerIndex].shape.some((row, dy) =>
                 row.some((value, dx) =>
                     value &&
-                    (currentPiece.y + dy >= BOARD_HEIGHT ||
-                     currentPiece.x + dx < 0 ||
-                     currentPiece.x + dx >= BOARD_WIDTH ||
-                     board[currentPiece.y + dy][currentPiece.x + dx])
+                    (currentPieces[playerIndex].y + dy >= BOARD_HEIGHT ||
+                     currentPieces[playerIndex].x + dx < 0 ||
+                     currentPieces[playerIndex].x + dx >= BOARD_WIDTH ||
+                     boards[playerIndex][currentPieces[playerIndex].y + dy][currentPieces[playerIndex].x + dx])
                 )
             );
         }
 
-        function mergePiece() {
-            currentPiece.shape.forEach((row, y) => {
+        function mergePiece(playerIndex) {
+            currentPieces[playerIndex].shape.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value) {
-                        board[currentPiece.y + y][currentPiece.x + x] = {
-                            color: currentPiece.color,
-                            character: currentPiece.character
+                        boards[playerIndex][currentPieces[playerIndex].y + y][currentPieces[playerIndex].x + x] = {
+                            color: currentPieces[playerIndex].color,
+                            character: currentPieces[playerIndex].character
                         };
                     }
                 });
             });
         }
 
-        function clearLines() {
+        function clearLines(playerIndex) {
             let linesCleared = 0;
             for (let y = BOARD_HEIGHT - 1; y >= 0; y--) {
-                if (board[y].every(cell => cell !== 0)) {
-                    board.splice(y, 1);
-                    board.unshift(Array(BOARD_WIDTH).fill(0));
+                if (boards[playerIndex][y].every(cell => cell !== 0)) {
+                    boards[playerIndex].splice(y, 1);
+                    boards[playerIndex].unshift(Array(BOARD_WIDTH).fill(0));
                     linesCleared++;
                 }
             }
             if (linesCleared > 0) {
-                score += linesCleared * 100;
-                document.getElementById('score-value').textContent = score;
+                scores[playerIndex] += linesCleared * 100;
+                document.getElementById(`score-value-${playerIndex + 1}`).textContent = scores[playerIndex];
             }
         }
 
-        function isGameOver() {
-            return board[0].some(cell => cell !== 0);
+        function isGameOver(playerIndex) {
+            return boards[playerIndex][0].some(cell => cell !== 0);
         }
 
         function endGame() {
-            clearInterval(gameInterval);
-            document.getElementById('final-score').textContent = score;
+            gameIntervals.forEach(interval => clearInterval(interval));
+            document.getElementById('final-score-1').textContent = scores[0];
+            document.getElementById('final-score-2').textContent = scores[1];
+            const winnerText = scores[0] > scores[1] ? "Player 1 Wins!" :
+                               scores[1] > scores[0] ? "Player 2 Wins!" : "It's a Tie!";
+            document.getElementById('winner-text').textContent = winnerText;
             document.getElementById('game-over').style.display = 'block';
         }
-
         function returnToThemeSelection() {
             document.getElementById('game-over').style.display = 'none';
             document.getElementById('game-container').style.display = 'none';
             document.getElementById('theme-selection').style.display = 'flex';
         }
 
-        function updateGame() {
-            drawBoard();
-            drawPiece();
+        function updateGame(playerIndex) {
+            drawBoard(playerIndex);
+            drawPiece(playerIndex);
         }
 
         function resetGame() {
-            board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
-            score = 0;
-            document.getElementById('score-value').textContent = score;
-            currentPiece = createPiece();
-            updateGame();
+            boards = [
+                Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0)),
+                Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0))
+            ];
+            scores = [0, 0];
+            document.getElementById('score-value-1').textContent = '0';
+            document.getElementById('score-value-2').textContent = '0';
+            currentPieces = [createPiece(), createPiece()];
+            updateGame(0);
+            updateGame(1);
         }
 
         document.addEventListener('keydown', (e) => {
             switch (e.key) {
+                // Player 1 controls (WASD)
+                case 'a':
+                    moveLeft(0);
+                    break;
+                case 'd':
+                    moveRight(0);
+                    break;
+                case 's':
+                    moveDown(0);
+                    break;
+                case 'w':
+                    rotate(0);
+                    break;
+                // Player 2 controls (Arrow keys)
                 case 'ArrowLeft':
-                    moveLeft();
+                    moveLeft(1);
                     break;
                 case 'ArrowRight':
-                    moveRight();
+                    moveRight(1);
                     break;
                 case 'ArrowDown':
-                    moveDown();
+                    moveDown(1);
                     break;
                 case 'ArrowUp':
-                    rotate();
+                    rotate(1);
                     break;
             }
         });
