@@ -8,29 +8,57 @@
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
         body {
-            background-image: url('https://i.imgur.com/xdtYNgQ.png');
-            background-repeat: repeat;
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', cursive;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Press Start 2P', cursive;
+            min-height: 100vh;
+            background-color: #8B8B8B;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px);
+            background-size: 16px 16px;
+            position: relative;
+            overflow: hidden;
         }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle, #6B6B6B 1px, transparent 1px),
+                radial-gradient(circle, #6B6B6B 1px, transparent 1px);
+            background-size: 16px 16px;
+            background-position: 0 0, 8px 8px;
+            opacity: 0.3;
+        }
+
         #game-container, #theme-selection {
             background-color: rgba(63, 63, 63, 0.8);
             border: 10px solid #1D1D1D;
             padding: 20px;
             border-radius: 10px;
+            position: relative;
+            z-index: 1;
         }
+
         #game-title {
             color: #FFD700;
             font-size: 48px;
             text-align: center;
             margin-bottom: 20px;
             text-shadow: 3px 3px #000000;
+            position: relative;
+            z-index: 1;
         }
+
         #game-board {
             width: 300px;
             height: 600px;
@@ -38,6 +66,7 @@
             position: relative;
             overflow: hidden;
         }
+
         .tetromino {
             position: absolute;
             width: 30px;
@@ -49,17 +78,20 @@
             align-items: center;
             font-size: 20px;
         }
+
         #score {
             color: #FFFFFF;
             font-size: 24px;
             margin-top: 20px;
             text-align: center;
         }
+
         #theme-selection {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
         .theme-button {
             margin: 10px;
             padding: 10px 20px;
@@ -71,8 +103,34 @@
             border-radius: 5px;
             font-family: 'Press Start 2P', cursive;
         }
+
         .theme-button:hover {
             background-color: #45a049;
+        }
+
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #FFD700;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        #game-over button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Press Start 2P', cursive;
         }
     </style>
 </head>
@@ -89,6 +147,11 @@
     <div id="game-container" style="display: none;">
         <div id="game-board"></div>
         <div id="score">Score: <span id="score-value">0</span></div>
+    </div>
+    <div id="game-over" style="display: none;">
+        <h2>Game Over!</h2>
+        <p>Your score: <span id="final-score"></span></p>
+        <button onclick="returnToThemeSelection()">Play Again</button>
     </div>
 
     <script>
@@ -191,12 +254,11 @@
                 currentPiece.y--;
                 mergePiece();
                 clearLines();
-                currentPiece = createPiece();
-                if (isCollision()) {
-                    alert('Game Over! Your score: ' + score);
-                    resetGame();
-                    startGame();
+                if (isGameOver()) {
+                    endGame();
+                    return;
                 }
+                currentPiece = createPiece();
             }
             updateGame();
         }
@@ -269,6 +331,22 @@
             }
         }
 
+        function isGameOver() {
+            return board[0].some(cell => cell !== 0);
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('game-over').style.display = 'block';
+        }
+
+        function returnToThemeSelection() {
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('theme-selection').style.display = 'flex';
+        }
+
         function updateGame() {
             drawBoard();
             drawPiece();
@@ -299,7 +377,7 @@
             }
         });
 
-        // Game starts when a theme is selected
+        // The game will start when a theme is selected
     </script>
 </body>
 </html>
