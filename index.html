@@ -18,7 +18,7 @@
             margin: 0;
             font-family: 'Press Start 2P', cursive;
         }
-        #game-container {
+        #game-container, #theme-selection {
             background-color: rgba(63, 63, 63, 0.8);
             border: 10px solid #1D1D1D;
             padding: 20px;
@@ -55,11 +55,38 @@
             margin-top: 20px;
             text-align: center;
         }
+        #theme-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .theme-button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Press Start 2P', cursive;
+        }
+        .theme-button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
     <div id="game-title">KMURIS</div>
-    <div id="game-container">
+    <div id="theme-selection">
+        <h2>Choose Your Theme</h2>
+        <button class="theme-button" onclick="selectTheme('animal')">Animal Tetris</button>
+        <button class="theme-button" onclick="selectTheme('bird')">Bird Tetris</button>
+        <button class="theme-button" onclick="selectTheme('sea')">Sea Tetris</button>
+        <button class="theme-button" onclick="selectTheme('food')">Food Tetris</button>
+        <button class="theme-button" onclick="selectTheme('fantasy')">Fantasy Tetris</button>
+    </div>
+    <div id="game-container" style="display: none;">
         <div id="game-board"></div>
         <div id="score">Score: <span id="score-value">0</span></div>
     </div>
@@ -69,7 +96,14 @@
         const BOARD_HEIGHT = 20;
         const BLOCK_SIZE = 30;
         const COLORS = ['#9ACD32', '#F1C232', '#54C9F3', '#BF54F3', '#F35454', '#54F354', '#F3A754'];
-        const CHARACTERS = ['😺', '🐶', '🐰', '🐼', '🐨', '🐯', '🦊'];
+
+        const THEMES = {
+            animal: ['🐱', '🐶', '🐰', '🐼', '🐨', '🐯', '🦊'],
+            bird: ['🐧', '🐤', '🐥', '🦆', '🦉', '🦜', '🦅'],
+            sea: ['🐳', '🐙', '🐬', '🦞', '🦀', '🐠', '🐡'],
+            food: ['🍎', '🍓', '🍒', '🍕', '🍔', '🍦', '🧁'],
+            fantasy: ['👽', '🤖', '👻', '🌟', '🚀', '🌈', '🧙']
+        };
 
         const SHAPES = [
             [[1, 1, 1, 1]],
@@ -84,12 +118,29 @@
         let board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
         let currentPiece = null;
         let score = 0;
+        let currentTheme = null;
+        let gameInterval = null;
+
+        function selectTheme(theme) {
+            currentTheme = THEMES[theme];
+            document.getElementById('theme-selection').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            resetGame();
+            startGame();
+        }
+
+        function startGame() {
+            if (gameInterval) {
+                clearInterval(gameInterval);
+            }
+            gameInterval = setInterval(moveDown, 1000);
+        }
 
         function createPiece() {
             const shapeIndex = Math.floor(Math.random() * SHAPES.length);
             const shape = SHAPES[shapeIndex];
             const color = COLORS[shapeIndex];
-            const character = CHARACTERS[shapeIndex];
+            const character = currentTheme[shapeIndex];
             return {
                 shape,
                 color,
@@ -144,6 +195,7 @@
                 if (isCollision()) {
                     alert('Game Over! Your score: ' + score);
                     resetGame();
+                    startGame();
                 }
             }
             updateGame();
@@ -247,8 +299,7 @@
             }
         });
 
-        resetGame();
-        setInterval(moveDown, 1000);
+        // Game starts when a theme is selected
     </script>
 </body>
 </html>
