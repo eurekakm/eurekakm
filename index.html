@@ -5,24 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KMURIS</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
         body {
-            background-color: #8B8B8B;
+            background-image: url('https://i.imgur.com/xdtYNgQ.png');
+            background-repeat: repeat;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Press Start 2P', cursive;
         }
         #game-container {
-            background-color: #3F3F3F;
+            background-color: rgba(63, 63, 63, 0.8);
             border: 10px solid #1D1D1D;
             padding: 20px;
+            border-radius: 10px;
+        }
+        #game-title {
+            color: #FFD700;
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px #000000;
         }
         #game-board {
             width: 300px;
             height: 600px;
-            background-color: #000000;
+            background-color: rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
         }
@@ -32,6 +44,10 @@
             height: 30px;
             box-sizing: border-box;
             border: 2px solid #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
         }
         #score {
             color: #FFFFFF;
@@ -42,6 +58,7 @@
     </style>
 </head>
 <body>
+    <div id="game-title">KMURIS</div>
     <div id="game-container">
         <div id="game-board"></div>
         <div id="score">Score: <span id="score-value">0</span></div>
@@ -52,6 +69,7 @@
         const BOARD_HEIGHT = 20;
         const BLOCK_SIZE = 30;
         const COLORS = ['#9ACD32', '#F1C232', '#54C9F3', '#BF54F3', '#F35454', '#54F354', '#F3A754'];
+        const CHARACTERS = ['😺', '🐶', '🐰', '🐼', '🐨', '🐯', '🦊'];
 
         const SHAPES = [
             [[1, 1, 1, 1]],
@@ -68,11 +86,14 @@
         let score = 0;
 
         function createPiece() {
-            const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-            const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            const shapeIndex = Math.floor(Math.random() * SHAPES.length);
+            const shape = SHAPES[shapeIndex];
+            const color = COLORS[shapeIndex];
+            const character = CHARACTERS[shapeIndex];
             return {
                 shape,
                 color,
+                character,
                 x: Math.floor(BOARD_WIDTH / 2) - Math.floor(shape[0].length / 2),
                 y: 0
             };
@@ -88,7 +109,8 @@
                         block.className = 'tetromino';
                         block.style.left = x * BLOCK_SIZE + 'px';
                         block.style.top = y * BLOCK_SIZE + 'px';
-                        block.style.backgroundColor = value;
+                        block.style.backgroundColor = value.color;
+                        block.textContent = value.character;
                         gameBoard.appendChild(block);
                     }
                 });
@@ -105,6 +127,7 @@
                         block.style.left = (currentPiece.x + x) * BLOCK_SIZE + 'px';
                         block.style.top = (currentPiece.y + y) * BLOCK_SIZE + 'px';
                         block.style.backgroundColor = currentPiece.color;
+                        block.textContent = currentPiece.character;
                         document.getElementById('game-board').appendChild(block);
                     }
                 });
@@ -170,7 +193,10 @@
             currentPiece.shape.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value) {
-                        board[currentPiece.y + y][currentPiece.x + x] = currentPiece.color;
+                        board[currentPiece.y + y][currentPiece.x + x] = {
+                            color: currentPiece.color,
+                            character: currentPiece.character
+                        };
                     }
                 });
             });
