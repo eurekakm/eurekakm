@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,9 +17,9 @@
             align-items: center;
             min-height: 100vh;
             background-color: #8B8B8B;
-            background-image:
-                linear-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 0, 0, 0.2) 1px, transparent 1px);
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px);
             background-size: 16px 16px;
             position: relative;
             overflow: hidden;
@@ -33,7 +32,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-image:
+            background-image: 
                 radial-gradient(circle, #6B6B6B 1px, transparent 1px),
                 radial-gradient(circle, #6B6B6B 1px, transparent 1px);
             background-size: 16px 16px;
@@ -41,8 +40,7 @@
             opacity: 0.3;
         }
 
-        #game-container,
-        #theme-selection {
+        #game-container, #theme-selection {
             background-color: rgba(63, 63, 63, 0.8);
             border: 10px solid #1D1D1D;
             padding: 20px;
@@ -126,6 +124,17 @@
         .player-header {
             margin-bottom: 10px;
             color: #FFFFFF;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .player-name {
+            font-size: 18px;
+        }
+
+        .player-controls {
+            font-size: 14px;
+            color: #FFD700;
         }
 
         #theme-selection {
@@ -176,7 +185,6 @@
         }
     </style>
 </head>
-
 <body>
     <div id="game-title">Two-Player KMURIS</div>
     <div id="theme-selection">
@@ -191,14 +199,20 @@
         <div class="player-container player-1">
             <div class="next-piece-container" id="next-piece-1"></div>
             <div class="player-info">
-                <h3 class="player-header">Player 1 (WASD)</h3>
+                <div class="player-header">
+                    <div class="player-name">Player 1</div>
+                    <div class="player-controls">(WASD)</div>
+                </div>
                 <div id="game-board-1" class="game-board"></div>
                 <div class="score">Score: <span id="score-value-1">0</span></div>
             </div>
         </div>
         <div class="player-container player-2">
             <div class="player-info">
-                <h3 class="player-header">Player 2 (Arrows)</h3>
+                <div class="player-header">
+                    <div class="player-name">Player 2</div>
+                    <div class="player-controls">(Arrows)</div>
+                </div>
                 <div id="game-board-2" class="game-board"></div>
                 <div class="score">Score: <span id="score-value-2">0</span></div>
             </div>
