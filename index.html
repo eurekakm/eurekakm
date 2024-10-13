@@ -61,15 +61,16 @@
 
         #game-container {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
             align-items: flex-start;
-            width: 800px;
+            width: 900px;
         }
 
         .player-container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-direction: row;
+            align-items: flex-start;
+            margin: 0 20px;
         }
 
         .game-board {
@@ -84,8 +85,16 @@
             width: 120px;
             height: 120px;
             background-color: rgba(0, 0, 0, 0.6);
-            margin-top: 20px;
             position: relative;
+            margin-top: 40px;
+        }
+
+        .player-1 .next-piece-container {
+            margin-right: 20px;
+        }
+
+        .player-2 .next-piece-container {
+            margin-left: 20px;
         }
 
         .tetromino {
@@ -105,6 +114,12 @@
             font-size: 24px;
             margin-top: 20px;
             text-align: center;
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #theme-selection {
@@ -166,17 +181,21 @@
         <button class="theme-button" onclick="selectTheme('fantasy')">Fantasy Tetris</button>
     </div>
     <div id="game-container" style="display: none;">
-        <div class="player-container">
-            <h3>Player 1 (WASD)</h3>
-            <div id="game-board-1" class="game-board"></div>
-            <div id="next-piece-1" class="next-piece-container"></div>
-            <div class="score">Score: <span id="score-value-1">0</span></div>
+        <div class="player-container player-1">
+            <div class="next-piece-container" id="next-piece-1"></div>
+            <div class="player-info">
+                <h3>Player 1 (WASD)</h3>
+                <div id="game-board-1" class="game-board"></div>
+                <div class="score">Score: <span id="score-value-1">0</span></div>
+            </div>
         </div>
-        <div class="player-container">
-            <h3>Player 2 (Arrows)</h3>
-            <div id="game-board-2" class="game-board"></div>
-            <div id="next-piece-2" class="next-piece-container"></div>
-            <div class="score">Score: <span id="score-value-2">0</span></div>
+        <div class="player-container player-2">
+            <div class="player-info">
+                <h3>Player 2 (Arrows)</h3>
+                <div id="game-board-2" class="game-board"></div>
+                <div class="score">Score: <span id="score-value-2">0</span></div>
+            </div>
+            <div class="next-piece-container" id="next-piece-2"></div>
         </div>
     </div>
     <div id="game-over" style="display: none;">
