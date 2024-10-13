@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,9 +18,9 @@
             align-items: center;
             min-height: 100vh;
             background-color: #8B8B8B;
-            background-image: 
-                linear-gradient(rgba(0,0,0,0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px);
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.2) 1px, transparent 1px);
             background-size: 16px 16px;
             position: relative;
             overflow: hidden;
@@ -32,15 +33,18 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: 
+            /* background-image: 
                 radial-gradient(circle, #6B6B6B 1px, transparent 1px),
                 radial-gradient(circle, #6B6B6B 1px, transparent 1px);
-            background-size: 16px 16px;
+            background-size: 16px 16px; */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="470" height="80"><text x="0" y="40" font-family="Press Start 2P" font-size="40" fill="white">Eureka Project Fall 2024</text></svg>');
+            background-size: 180px 40px;
             background-position: 0 0, 8px 8px;
             opacity: 0.3;
         }
 
-        #game-container, #theme-selection {
+        #game-container,
+        #theme-selection {
             background-color: rgba(63, 63, 63, 0.8);
             border: 10px solid #1D1D1D;
             padding: 20px;
@@ -83,12 +87,13 @@
 
         .next-piece-container {
             width: 120px;
-            height: 120px;            
+            height: 120px;
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 20px 20px 0 20px; /* Add margin-top to move it lower */
+            margin: 20px 20px 0 20px;
+            /* Add margin-top to move it lower */
         }
 
         .player-1 .next-piece-container {
@@ -188,6 +193,7 @@
         }
     </style>
 </head>
+
 <body>
     <div id="game-title">EurekaTRIS</div>
     <div id="theme-selection">
