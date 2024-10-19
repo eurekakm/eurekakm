@@ -130,7 +130,6 @@
 
   <script>
     let openaiApiKey = ''; // Initially empty
-    let conversationHistory = []; // To store conversation history
 
     function checkApiKey(event) {
       if (event.key === 'Enter') {
@@ -150,16 +149,8 @@
         if (response.ok) {
           openaiApiKey = apiKey;
           document.getElementById('bulb').style.backgroundColor = 'green';
-          
-          // Add initial "system" role message for context
-          conversationHistory.push({
-            role: "system",
-            content: "You are a Coding Tutor. Respond in Korean whatever language the user say. If needed, ask questions to clarify what the user want and help the user better coding. Don't ask more than twice in a row."
-          });
-
           // Bot initiates conversation after successful validation
           displayMessage("저는 코딩 도우미입니다. 어떻게 도와드릴까요?", 'bot');
-          conversationHistory.push({ role: "bot", content: "저는 코딩 도우미입니다. 어떻게 도와드릴까요?" });
         } else {
           alert('Invalid API Key');
         }
@@ -179,20 +170,15 @@
       if (!userInput) return;
 
       displayMessage(userInput, 'user');
-      conversationHistory.push({ role: "user", content: userInput }); // Add user input to conversation history
       document.getElementById('user-input').value = '';
 
       try {
         const response = await getBotResponse(userInput);
         displayMessage(response, 'bot');
-        conversationHistory.push({ role: "bot", content: response }); // Add bot response to conversation history
       } catch (error) {
         console.error('Error:', error);
-        const errorMessage = "Sorry, something went wrong. Please try again.";
-        displayMessage(errorMessage, 'bot');
+        displayMessage("Sorry, something went wrong. Please try again.", 'bot');
         displayMessage(`Error details: ${error.message}`, 'bot');
-        conversationHistory.push({ role: "bot", content: errorMessage });
-        conversationHistory.push({ role: "bot", content: `Error details: ${error.message}` });
       }
     }
 
@@ -214,7 +200,10 @@
 
       const data = {
         model: "gpt-4o-mini",
-        messages: conversationHistory, // Send the entire conversation history
+        messages: [
+          { role: "system", content: "You are a Coding Tutor. Ask questions to clarify what the user want and help the user better coding. Respond in Korean whatever language the user say." },
+          { role: "user", content: userInput }
+        ],
         max_tokens: 800,
         temperature: 0.7
       };
