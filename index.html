@@ -127,7 +127,6 @@
   <footer>
     <p>&copy; 2023 Coding Tutor. All rights reserved.</p>
   </footer>
-</body>
 
   <script>
     let openaiApiKey = ''; // Initially empty
@@ -150,6 +149,8 @@
         if (response.ok) {
           openaiApiKey = apiKey;
           document.getElementById('bulb').style.backgroundColor = 'green';
+          // Bot initiates conversation after successful validation
+          displayMessage("저는 코딩 도우미입니다. 어떻게 도와드릴까요?", 'bot');
         } else {
           alert('Invalid API Key');
         }
@@ -200,7 +201,7 @@
       const data = {
         model: "gpt-4o-mini",
         messages: [
-          { role: "system", content: "You are a Coding Tutor. Ask questions to clarify what the user want and help the user better coding. Respond in Korean whatever language the user say." },
+          { role: "system", content: "You are a Coding Tutor. Respond in Korean whatever language the user say. If needed, ask questions to clarify what the user want and help the user better coding. Don't ask more than twice in a row." },
           { role: "user", content: userInput }
         ],
         max_tokens: 800,
