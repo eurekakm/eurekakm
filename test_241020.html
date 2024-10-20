@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Tutor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .chat-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .chat-messages {
+            height: 300px;
+            padding: 15px;
+            overflow-y: scroll;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .chat-input button {
+            padding: 10px 15px;
+            margin-left: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            margin: 10px 0;
+        }
+
+        .message.user {
+            text-align: right;
+            color: #333;
+        }
+
+        .message.bot {
+            text-align: left;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Coding Tutor</h1>
+    </header>
+
+    <main>
+        <div class="chat-container">
+            <div class="chat-header">
+                Chatbot
+            </div>
+            <div id="chat-messages" class="chat-messages">
+                <!-- Messages will be added here -->
+            </div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="Type your message here..."
+                    onkeypress="handleKeyPress(event)" />
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Coding Tutor. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            if (!userInput) return;
+
+            displayMessage(userInput, 'user');
+            document.getElementById('user-input').value = '';
+
+            try {
+                const response = await getBotResponse(userInput);
+                displayMessage(response, 'bot');
+            } catch (error) {
+                console.error('Error:', error);
+                displayMessage("Sorry, something went wrong. Please try again.", 'bot');
+                displayMessage(`Error details: ${error.message}`, 'bot');
+            }
+        }
+
+        function displayMessage(message, sender) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
+            messageElement.textContent = message;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function getBotResponse(userInput) {
+            const url = 'http://ec2-3-39-229-83.ap-northeast-2.compute.amazonaws.com:8000/chat';
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+
+            const data = {
+                message: userInput
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status} - ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log("Request:", JSON.stringify(data, null, 2));
+            console.log("Response:", JSON.stringify(result, null, 2));
+
+            return result.response;  // Updated to match the FastAPI response structure
+        }
+    </script>
+
+</body>
+
+</html>
