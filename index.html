@@ -137,7 +137,6 @@
         validateApiKey(inputKey);
       }
     }
-
     async function validateApiKey(apiKey) {
       try {
         const response = await fetch('https://api.openai.com/v1/engines', {
@@ -150,8 +149,8 @@
           openaiApiKey = apiKey;
           document.getElementById('bulb').style.backgroundColor = 'green';
           // Bot initiates conversation after successful validation
-          displayMessage("저는 코딩 도우미입니다. 어떻게 도와드릴까요?", 'bot');
-        } else {
+          displayMessage("(AI 엔진이 초기화되었습니다.) 저는 코딩 도우미입니다. 어떻게 도와드릴까요?", 'bot');
+        } else {          
           alert('Invalid API Key');
         }
       } catch (error) {
